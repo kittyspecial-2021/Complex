@@ -1,0 +1,23 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t kittyspecial/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run kittyspecial/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t kittyspecial/multi-client ./client
+  - docker build -t kittyspecial/multi-server ./server
+  - docker build -t kittyspecial/multi-worker ./worker
+  - docker build -t kittyspecial/multi-nginx ./nginx
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push kittyspecial/multi-client
+  - docker push kittyspecial/multi-nginx
+  - docker push kittyspecial/multi-server
+  - docker push kittyspecial/multi-worker
+
+
+
